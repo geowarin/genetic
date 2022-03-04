@@ -1,33 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { randImagePath } from "./logic/random";
 import { compare, IResult } from "./image-ssim";
-import { IMG_SIZE, NB_SEGMENTS, rects } from "./logic/constants";
-import { createCanvas, loadImage, loadImageRect } from "./logic/canvas";
+import { IMG_SIZE } from "./logic/constants";
+import { generateFace, loadImage } from "./logic/canvas";
+import { randomImgNumber } from "./logic/random";
 
-interface Toto {
-  image: ImageData;
-  canvas: CanvasImageSource;
-}
-
-function mosaicFace(): Promise<Toto> {
-  const ctx = createCanvas();
-  const imgPromises = rects.map(
-    // (rect) => loadImageRect("face-2.jpg", rect)
-    (rect) => loadImageRect(randImagePath(), rect)
-  );
-  return Promise.all(imgPromises).then((img) => {
-    for (let i = 0; i < NB_SEGMENTS; i++) {
-      const { y, x } = rects[i];
-      ctx.putImageData(img[i], x, y);
-    }
-    const wholeImage = ctx.getImageData(0, 0, IMG_SIZE, IMG_SIZE);
-    ctx.putImageData(wholeImage, 0, 0);
-    return {
-      image: wholeImage,
-      canvas: ctx.canvas,
-    };
-  });
-}
+const DISPLAY_SCALE = 0.5;
 
 export function App() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -39,20 +16,32 @@ export function App() {
       return;
     }
     const ctx = canvas.getContext("2d")!;
-    mosaicFace().then((wholeImage) => {
-      loadImage("face-2.jpg").then((refImage) => {
-        const result = compare(wholeImage.image, refImage);
+
+    const randomFace = generateFace([
+      randomImgNumber(),
+      randomImgNumber(),
+      randomImgNumber(),
+      randomImgNumber(),
+    ]);
+    Promise.all([randomFace, loadImage("face-2.jpg")]).then(
+      ([mosaic, target]) => {
+        const mosaicImage = mosaic.getImageData(0, 0, IMG_SIZE, IMG_SIZE);
+        const result = compare(mosaicImage, target);
         setResult(result);
-        ctx.scale(0.5, 0.5);
-        ctx.drawImage(wholeImage.canvas, 0, 0);
-      });
-    });
+        ctx.scale(DISPLAY_SCALE, DISPLAY_SCALE);
+        ctx.drawImage(mosaic.canvas, 0, 0);
+      }
+    );
   }, [ref]);
 
   return (
     <div>
       <h2>Result {result?.ssim}</h2>
-      <canvas ref={ref} width={IMG_SIZE} height={IMG_SIZE} />
+      <canvas
+        ref={ref}
+        width={IMG_SIZE * DISPLAY_SCALE}
+        height={IMG_SIZE * DISPLAY_SCALE}
+      />
     </div>
   );
 }

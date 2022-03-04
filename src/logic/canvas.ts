@@ -1,4 +1,4 @@
-import { IMG_SIZE, Rect } from "./constants";
+import { generateSubvisionsRects, IMG_SIZE, Rect } from "./constants";
 
 export function createCanvas() {
   const canvas = document.createElement("canvas");
@@ -29,5 +29,28 @@ export function loadImageRect(
       resolve(imageData);
     };
     img.src = path;
+  });
+}
+
+function facePath(number: number) {
+  return `face-${number}.jpg`;
+}
+
+export function generateFace(
+  chromosomes: number[]
+): Promise<CanvasRenderingContext2D> {
+  const ctx = createCanvas();
+  const nbSegments = chromosomes.length;
+
+  const rects = generateSubvisionsRects(nbSegments);
+  const imgPromises = rects.map((rect, index) =>
+    loadImageRect(facePath(chromosomes[index]), rect)
+  );
+  return Promise.all(imgPromises).then((img) => {
+    for (let i = 0; i < nbSegments; i++) {
+      const { y, x } = rects[i];
+      ctx.putImageData(img[i], x, y);
+    }
+    return ctx;
   });
 }
