@@ -13,8 +13,6 @@
  * - For more information see: http://en.wikipedia.org/wiki/Structural_similarity
  */
 
-export type Data = number[] | any[] | Uint8Array;
-
 /**
  * Grey = 1, GreyAlpha = 2, RGB = 3, RGBAlpha = 4
  */
@@ -25,12 +23,7 @@ export enum Channels {
   RGBAlpha = 4,
 }
 
-export interface IImage {
-  data: Data;
-  width: number;
-  height: number;
-  channels: Channels;
-}
+const DEFAULT_CHANNEL = Channels.RGBAlpha;
 
 export interface IResult {
   ssim: number;
@@ -42,8 +35,8 @@ export interface IResult {
  * @throws new Error('Images have different sizes!')
  */
 export function compare(
-  image1: IImage,
-  image2: IImage,
+  image1: ImageData,
+  image2: ImageData,
   windowSize: number = 8,
   K1: number = 0.01,
   K2: number = 0.03,
@@ -54,16 +47,13 @@ export function compare(
     throw new Error("Images have different sizes!");
   }
 
-  /* tslint:disable:no-bitwise */
-  var L: number = (1 << bitsPerComponent) - 1;
-  /* tslint:enable:no-bitwise */
+  const L: number = (1 << bitsPerComponent) - 1;
+  const c1: number = Math.pow(K1 * L, 2);
+  const c2: number = Math.pow(K2 * L, 2);
+  let numWindows: number = 0;
+  let mssim: number = 0.0;
 
-  var c1: number = Math.pow(K1 * L, 2),
-    c2: number = Math.pow(K2 * L, 2),
-    numWindows: number = 0,
-    mssim: number = 0.0;
-
-  var mcs: number = 0.0;
+  let mcs: number = 0.0;
 
   function iteration(
     lumaValues1: number[],
@@ -72,11 +62,10 @@ export function compare(
     averageLumaValue2: number
   ): void {
     // calculate variance and covariance
-    var sigxy: number, sigsqx: number, sigsqy: number;
-
+    let sigxy: number, sigsqx: number, sigsqy: number;
     sigxy = sigsqx = sigsqy = 0.0;
 
-    for (var i: number = 0; i < lumaValues1.length; i++) {
+    for (let i: number = 0; i < lumaValues1.length; i++) {
       sigsqx += Math.pow(lumaValues1[i] - averageLumaValue1, 2);
       sigsqy += Math.pow(lumaValues2[i] - averageLumaValue2, 2);
       sigxy +=
@@ -84,16 +73,16 @@ export function compare(
         (lumaValues2[i] - averageLumaValue2);
     }
 
-    var numPixelsInWin: number = lumaValues1.length - 1;
+    const numPixelsInWin = lumaValues1.length - 1;
     sigsqx /= numPixelsInWin;
     sigsqy /= numPixelsInWin;
     sigxy /= numPixelsInWin;
 
     // perform ssim calculation on window
-    var numerator: number =
+    const numerator: number =
       (2 * averageLumaValue1 * averageLumaValue2 + c1) * (2 * sigxy + c2);
 
-    var denominator: number =
+    const denominator: number =
       (Math.pow(averageLumaValue1, 2) + Math.pow(averageLumaValue2, 2) + c1) *
       (sigsqx + sigsqy + c2);
 
@@ -114,8 +103,8 @@ export function compare(
  */
 module Internals {
   export function _iterate(
-    image1: IImage,
-    image2: IImage,
+    image1: ImageData,
+    image2: ImageData,
     windowSize: number,
     luminance: boolean,
     callback: (
@@ -125,16 +114,16 @@ module Internals {
       averageLumaValue2: number
     ) => void
   ): void {
-    var width: number = image1.width,
-      height: number = image1.height;
+    const width: number = image1.width;
+    const height: number = image1.height;
 
-    for (var y: number = 0; y < height; y += windowSize) {
-      for (var x: number = 0; x < width; x += windowSize) {
+    for (let y: number = 0; y < height; y += windowSize) {
+      for (let x: number = 0; x < width; x += windowSize) {
         // avoid out-of-width/height
-        var windowWidth: number = Math.min(windowSize, width - x),
-          windowHeight: number = Math.min(windowSize, height - y);
+        const windowWidth: number = Math.min(windowSize, width - x);
+        const windowHeight: number = Math.min(windowSize, height - y);
 
-        var lumaValues1: number[] = _lumaValuesForWindow(
+        const lumaValues1: number[] = _lumaValuesForWindow(
             image1,
             x,
             y,
@@ -159,27 +148,28 @@ module Internals {
   }
 
   function _lumaValuesForWindow(
-    image: IImage,
+    image: ImageData,
     x: number,
     y: number,
     width: number,
     height: number,
-    luminance: boolean
+    luminance: boolean,
+    channels: Channels = DEFAULT_CHANNEL
   ): number[] {
-    var array: Data = image.data,
+    const array = image.data,
       lumaValues: number[] = <any>(
         new Float32Array(new ArrayBuffer(width * height * 4))
-      ),
-      counter: number = 0;
+      );
+    let counter: number = 0;
 
-    var maxj: number = y + height;
+    const maxj: number = y + height;
 
-    for (var j: number = y; j < maxj; j++) {
-      var offset: number = j * image.width;
-      var i: number = (offset + x) * image.channels;
-      var maxi: number = (offset + x + width) * image.channels;
+    for (let j: number = y; j < maxj; j++) {
+      const offset: number = j * image.width;
+      let i: number = (offset + x) * channels;
+      const maxi: number = (offset + x + width) * channels;
 
-      switch (image.channels) {
+      switch (channels) {
         case Channels.Grey:
           while (i < maxi) {
             // (0.212655 +  0.715158 + 0.072187) === 1
@@ -228,9 +218,9 @@ module Internals {
   }
 
   function _averageLuma(lumaValues: number[]): number {
-    var sumLuma: number = 0.0;
+    let sumLuma: number = 0.0;
 
-    for (var i: number = 0; i < lumaValues.length; i++) {
+    for (let i: number = 0; i < lumaValues.length; i++) {
       sumLuma += lumaValues[i];
     }
 
