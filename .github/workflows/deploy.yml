@@ -33,6 +33,7 @@ jobs:
             ${{ runner.os }}-
 
 #      - run: pnpm ci
+      - run: pnpm install
       - run: pnpm run build
 
       - name: Deploy
