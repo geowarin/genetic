@@ -3,7 +3,7 @@ import { randImagePath } from "./random";
 import { compare, IImage, IResult } from "./image-ssim";
 
 const IMG_SIZE = 1024;
-const DIVISIONS = 4;
+const DIVISIONS = 2;
 const NB_SEGMENTS = DIVISIONS * DIVISIONS;
 const RECT_SIZE = IMG_SIZE / DIVISIONS;
 
