@@ -1,4 +1,11 @@
-import { generateSubvisionsRects, IMG_SIZE, Rect } from "./constants";
+import { IMG_SIZE } from "./constants";
+
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 export function createCanvas() {
   const canvas = document.createElement("canvas");
@@ -42,7 +49,7 @@ export function generateFace(
   const ctx = createCanvas();
   const nbSegments = chromosomes.length;
 
-  const rects = generateSubvisionsRects(nbSegments);
+  const rects = generateSubdivisionRects(nbSegments);
   const imgPromises = rects.map((rect, index) =>
     loadImageRect(facePath(chromosomes[index]), rect)
   );
@@ -52,5 +59,22 @@ export function generateFace(
       ctx.putImageData(img[i], x, y);
     }
     return ctx;
+  });
+}
+
+export function generateSubdivisionRects(nbSegments: number): Rect[] {
+  const DIVISIONS = Math.sqrt(nbSegments);
+  // const NB_SEGMENTS = DIVISIONS * DIVISIONS;
+  const RECT_SIZE = IMG_SIZE / DIVISIONS;
+
+  return Array.from({ length: nbSegments }).map((_, i) => {
+    const x = Math.floor(i / DIVISIONS);
+    const y = i % DIVISIONS;
+    return {
+      x: x * RECT_SIZE,
+      y: y * RECT_SIZE,
+      width: RECT_SIZE,
+      height: RECT_SIZE,
+    };
   });
 }
