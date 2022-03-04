@@ -1,57 +1,109 @@
-import { IImage, IResult, compare } from "./image-ssim";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { randImagePath } from "./random";
+import { compare, IImage, IResult } from "./image-ssim";
 
-function random(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+const IMG_SIZE = 1024;
+const DIVISIONS = 4;
+const NB_SEGMENTS = DIVISIONS * DIVISIONS;
+const RECT_SIZE = IMG_SIZE / DIVISIONS;
 
-const src1 = `face-${random(1, 20)}.jpg`;
-const src2 = `face-${random(1, 20)}.jpg`;
+const rects: Rect[] = Array.from({ length: NB_SEGMENTS }).map((_, i) => {
+  const x = Math.floor(i / DIVISIONS);
+  const y = i % DIVISIONS;
+  return {
+    x: x * RECT_SIZE,
+    y: y * RECT_SIZE,
+    width: RECT_SIZE,
+    height: RECT_SIZE,
+  };
+});
 
-function App() {
+export function App() {
+  const ref = useRef<HTMLCanvasElement>(null);
   const [result, setResult] = useState<IResult>();
 
   useEffect(() => {
-    Promise.all([loadImage(src1), loadImage(src2)]).then(([img1, img2]) => {
-      setResult(compare(img1, img2));
-    });
-  }, []);
+    const canvas = ref.current;
+    if (canvas === null) {
+      return;
+    }
+    const ctx = canvas.getContext("2d")!;
+
+    const imgPromises = rects.map(
+      // (rect) => loadImageRect("face-2.jpg", rect)
+      (rect) => loadImageRect(randImagePath(), rect)
+    );
+    Promise.all(imgPromises)
+      .then((img) => {
+        for (let i = 0; i < NB_SEGMENTS; i++) {
+          const { y, x } = rects[i];
+          ctx.putImageData(img[i], x, y);
+        }
+      })
+      .then(() => {
+        const wholeImage = ctx.getImageData(0, 0, IMG_SIZE, IMG_SIZE);
+        loadImage("face-2.jpg")
+          .then(toIImage)
+          .then((refImage) => {
+            const result = compare(toIImage(wholeImage), refImage);
+            setResult(result);
+          });
+      });
+  }, [ref]);
 
   return (
-    <div className="App">
-      <img width={200} src={src1} />
-      <img width={200} src={src2} />
-
-      <h2>Similarity result</h2>
-      <pre>{JSON.stringify(result)}</pre>
+    <div>
+      <h2>Result {result?.ssim}</h2>
+      <canvas ref={ref} width={IMG_SIZE} height={IMG_SIZE} />
     </div>
   );
 }
 
-const width = 1024;
-const height = 1024;
+function createCanvas() {
+  const canvas = document.createElement("canvas");
+  canvas.width = IMG_SIZE;
+  canvas.height = IMG_SIZE;
+  return canvas.getContext("2d")!;
+}
 
-function loadImage(path: string): Promise<IImage> {
-  return new Promise<IImage>((resolve) => {
+interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+function toIImage(data: ImageData): IImage {
+  return {
+    width: data.width,
+    height: data.height,
+    // @ts-ignore
+    data: data.data,
+    channels: 4,
+  };
+}
+
+function loadImage(path: string): Promise<ImageData> {
+  return loadImageRect(path, {
+    x: 0,
+    y: 0,
+    width: IMG_SIZE,
+    height: IMG_SIZE,
+  });
+}
+
+function loadImageRect(
+  path: string,
+  { x, y, width, height }: Rect
+): Promise<ImageData> {
+  return new Promise((resolve) => {
     const img = new Image();
-    img.onload = function () {
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, width, canvas.height);
-      const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      resolve({
-        width: canvas.width,
-        height: canvas.height,
-        // @ts-ignore
-        data: id.data,
-        channels: 4,
-        canvas: canvas,
-      });
+    img.onload = () => {
+      const ctx = createCanvas();
+      ctx.drawImage(img, 0, 0, IMG_SIZE, IMG_SIZE);
+      const imageData = ctx.getImageData(x, y, width, height);
+      resolve(imageData);
     };
     img.src = path;
   });
 }
-
-export default App;
