@@ -4,7 +4,6 @@ specifiers:
   '@types/react': ^17.0.33
   '@types/react-dom': ^17.0.10
   '@vitejs/plugin-react': ^1.0.7
-  image-ssim: ^0.2.0
   prettier: ^2.5.1
   react: ^17.0.2
   react-dom: ^17.0.2
@@ -12,7 +11,6 @@ specifiers:
   vite: ^2.8.0
 
 dependencies:
-  image-ssim: 0.2.0
   react: 17.0.2
   react-dom: 17.0.2_react@17.0.2
 
@@ -679,10 +677,6 @@ packages:
     dependencies:
       function-bind: 1.1.1
     dev: true
-
-  /image-ssim/0.2.0:
-    resolution: {integrity: sha1-g7Qsei5uS4VQVHf+aRf128VkIOU=}
-    dev: false
 
   /is-core-module/2.8.1:
     resolution: {integrity: sha512-SdNCUs284hr40hFTFP6l0IfZ/RSrMXF3qgoRHd3/79unUTvrFO/JoXwkGm+5J/Oe3E/b5GsnG330uUNgRpu1PA==}

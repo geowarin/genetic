@@ -1,5 +1,4 @@
-import { compare } from "image-ssim";
-import { IImage, IResult } from "image-ssim/index";
+import { IImage, IResult, compare } from "./image-ssim";
 import { useEffect, useState } from "react";
 
 function random(min: number, max: number) {
