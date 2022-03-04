@@ -5,10 +5,10 @@ function random(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function App() {
-  const src1 = `face-${random(1, 20)}.jpg`;
-  const src2 = `face-${random(1, 20)}.jpg`;
+const src1 = `face-${random(1, 20)}.jpg`;
+const src2 = `face-${random(1, 20)}.jpg`;
 
+function App() {
   const [result, setResult] = useState<IResult>();
 
   useEffect(() => {
