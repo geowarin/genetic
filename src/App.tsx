@@ -6,8 +6,8 @@ function random(min: number, max: number) {
 }
 
 function App() {
-  const src1 = `/face-${random(1, 20)}.jpg`;
-  const src2 = `/face-${random(1, 20)}.jpg`;
+  const src1 = `face-${random(1, 20)}.jpg`;
+  const src2 = `face-${random(1, 20)}.jpg`;
 
   const [result, setResult] = useState<IResult>();
 
