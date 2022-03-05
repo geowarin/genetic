@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, useEffect, useRef, useState } from "react";
 import { compare, IResult } from "./image-ssim";
 import { IMG_SIZE } from "./logic/constants";
 import { generateFace, loadImage } from "./logic/canvas";
-import { randomImgNumber } from "./logic/random";
+import { randomChromosome } from "./logic/random";
 
 const DISPLAY_SCALE = 0.5;
 
@@ -17,12 +17,7 @@ export function App() {
     }
     const ctx = canvas.getContext("2d")!;
 
-    const randomFace = generateFace([
-      randomImgNumber(),
-      randomImgNumber(),
-      randomImgNumber(),
-      randomImgNumber(),
-    ]);
+    const randomFace = generateFace(randomChromosome());
     Promise.all([randomFace, loadImage("face-2.jpg")]).then(
       ([mosaic, target]) => {
         const mosaicImage = mosaic.getImageData(0, 0, IMG_SIZE, IMG_SIZE);
@@ -30,6 +25,7 @@ export function App() {
         setResult(result);
         ctx.scale(DISPLAY_SCALE, DISPLAY_SCALE);
         ctx.drawImage(mosaic.canvas, 0, 0);
+        ctx.resetTransform();
       }
     );
   }, [ref]);
