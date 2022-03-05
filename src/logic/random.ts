@@ -19,5 +19,10 @@ export function randomChromosome() {
     randomImgNumber(),
     randomImgNumber(),
     randomImgNumber(),
+    randomImgNumber(),
+    randomImgNumber(),
+    randomImgNumber(),
+    randomImgNumber(),
+    randomImgNumber(),
   ];
 }
