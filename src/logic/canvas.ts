@@ -78,3 +78,7 @@ export function generateSubdivisionRects(nbSegments: number): Rect[] {
     };
   });
 }
+
+export function getImageData(canvas: CanvasRenderingContext2D) {
+  return canvas.getImageData(0, 0, IMG_SIZE, IMG_SIZE);
+}

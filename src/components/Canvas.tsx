@@ -4,10 +4,10 @@ import { IMG_SIZE } from "../logic/constants";
 interface CanvasProps {
   scale?: number;
 
-  draw(ctx: CanvasRenderingContext2D): void;
+  image: CanvasRenderingContext2D;
 }
 
-export function Canvas({ draw, scale = 1 }: CanvasProps) {
+export function Canvas({ image, scale = 1 }: CanvasProps) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current;
@@ -16,7 +16,7 @@ export function Canvas({ draw, scale = 1 }: CanvasProps) {
     }
     const ctx = canvas.getContext("2d")!;
     ctx.scale(scale, scale);
-    draw(ctx);
+    ctx.drawImage(image.canvas, 0, 0);
     ctx.resetTransform();
   }, [ref]);
   return (

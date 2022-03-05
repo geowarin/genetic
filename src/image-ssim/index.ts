@@ -25,7 +25,7 @@ export enum Channels {
 
 const DEFAULT_CHANNEL = Channels.RGBAlpha;
 
-export interface IResult {
+export interface CompareResult {
   ssim: number;
   mcs: number;
 }
@@ -42,7 +42,7 @@ export function compare(
   K2: number = 0.03,
   luminance: boolean = true,
   bitsPerComponent: number = 8
-): IResult {
+): CompareResult {
   if (image1.width !== image2.width || image1.height !== image2.height) {
     throw new Error("Images have different sizes!");
   }
