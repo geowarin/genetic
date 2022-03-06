@@ -12,17 +12,3 @@ export function randImagePath() {
 export function randomImgNumber(): number {
   return random(1, NB_FACES);
 }
-
-export function randomChromosome() {
-  return [
-    randomImgNumber(),
-    randomImgNumber(),
-    randomImgNumber(),
-    randomImgNumber(),
-    randomImgNumber(),
-    randomImgNumber(),
-    randomImgNumber(),
-    randomImgNumber(),
-    randomImgNumber(),
-  ];
-}
