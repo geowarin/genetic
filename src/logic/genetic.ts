@@ -6,7 +6,7 @@ import { asSequence, range } from "sequency";
 
 const POPULATION_SIZE = 10;
 const NB_CHROMOSOMES = 9;
-const SELECTION_NUM = 4;
+const SELECTION_NUM = 6;
 
 export interface Person {
   face: CanvasRenderingContext2D;
@@ -80,7 +80,10 @@ async function crossOver(population: Person[]): Promise<Person[]> {
 }
 
 function replacement(population: RatedPerson[]): RatedPerson[] {
-  return [];
+  return asSequence(population)
+    .sortedByDescending((p) => p.rating)
+    .take(POPULATION_SIZE)
+    .toArray();
 }
 
 function mutation(population: Person[]): Person[] {

@@ -15,7 +15,7 @@ export function App() {
             key={p.id}
             person={p}
             className={classNames({
-              selected: results.selected.includes(p),
+              selected: results.newPopulation.includes(p),
             })}
           />
         ))}
@@ -23,7 +23,25 @@ export function App() {
       <h2>Children</h2>
       <div className="portraits">
         {results.children.map((p) => (
-          <Portrait key={p.id} person={p} />
+          <Portrait
+            key={p.id}
+            person={p}
+            className={classNames({
+              selected: results.newPopulation.includes(p),
+            })}
+          />
+        ))}
+      </div>
+      <h2>Mutants</h2>
+      <div className="portraits">
+        {results.mutants.map((p) => (
+          <Portrait
+            key={p.id}
+            person={p}
+            className={classNames({
+              selected: results.newPopulation.includes(p),
+            })}
+          />
         ))}
       </div>
     </>
@@ -37,7 +55,7 @@ function Portrait({ person, className }: PortraitProps) {
     <div className={"portrait " + className}>
       <Canvas image={person.face} scale={0.2} />
       <span>{person.name}</span>
-      <span>{person.rating}</span>
+      <span>{Math.ceil(person.rating * 10000) / 100}%</span>
     </div>
   );
 }
