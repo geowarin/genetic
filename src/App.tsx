@@ -24,41 +24,47 @@ export function App() {
         />
       </div>
 
-      <h2>Population</h2>
-      <div className="portraits">
-        {geneticsResults.population.map((p) => (
-          <Portrait
-            key={p.id}
-            person={p}
-            className={classNames({
-              selected: geneticsResults.newPopulation.includes(p),
-            })}
-          />
-        ))}
-      </div>
-      <h2>Children</h2>
-      <div className="portraits">
-        {geneticsResults.children.map((p) => (
-          <Portrait
-            key={p.id}
-            person={p}
-            className={classNames({
-              selected: geneticsResults.newPopulation.includes(p),
-            })}
-          />
-        ))}
-      </div>
-      <h2>Mutants</h2>
-      <div className="portraits">
-        {geneticsResults.mutants.map((p) => (
-          <Portrait
-            key={p.id}
-            person={p}
-            className={classNames({
-              selected: geneticsResults.newPopulation.includes(p),
-            })}
-          />
-        ))}
+      <div className="result-container">
+        <div className="results" style={{ maxWidth: "50%" }}>
+          <h2>Population</h2>
+          <div className="portraits">
+            {geneticsResults.population.map((p) => (
+              <Portrait
+                key={p.id}
+                person={p}
+                className={classNames({
+                  selected: geneticsResults.newPopulation.includes(p),
+                })}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="results" style={{ maxWidth: "25%" }}>
+          <h2>Children</h2>
+          <div className="portraits">
+            {geneticsResults.children.map((p) => (
+              <Portrait
+                key={p.id}
+                person={p}
+                className={classNames({
+                  selected: geneticsResults.newPopulation.includes(p),
+                })}
+              />
+            ))}
+          </div>
+        </div>
+        <h2>Mutants</h2>
+        <div className="portraits">
+          {geneticsResults.mutants.map((p) => (
+            <Portrait
+              key={p.id}
+              person={p}
+              className={classNames({
+                selected: geneticsResults.newPopulation.includes(p),
+              })}
+            />
+          ))}
+        </div>
       </div>
     </>
   );
