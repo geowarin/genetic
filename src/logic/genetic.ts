@@ -84,13 +84,17 @@ async function iteration(
 
 export async function doGenetics(
   iterations: number = 1
-): Promise<GeneticsResult> {
+): Promise<GeneticsResult[]> {
   const target = await loadImage("face-2.jpg");
   const initialPopulation = await generateRandomPopulation();
   const rate = rateWith(fitness(target));
-  let geneticsResult = await iteration(rate, initialPopulation);
-  for (let i = 1; i < iterations; i++) {
-    geneticsResult = await iteration(rate, geneticsResult.newPopulation);
+
+  const overallResults = [];
+  let currentPop = initialPopulation;
+  for (let i = 0; i < iterations; i++) {
+    const results = await iteration(rate, currentPop);
+    overallResults.push(results);
+    currentPop = results.newPopulation;
   }
-  return geneticsResult;
+  return overallResults;
 }

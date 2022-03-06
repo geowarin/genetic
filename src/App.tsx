@@ -4,44 +4,58 @@ import { doGenetics } from "./logic/genetic";
 import classNames from "classnames";
 import { RatedPerson } from "./logic/utils";
 import { NB_ITERATIONS } from "./logic/constants";
+import { useState } from "react";
 
 export function App() {
+  const [generation, setGeneration] = useState(0);
   const results = useAsset(() => doGenetics(NB_ITERATIONS));
 
+  const geneticsResults = results[generation];
   return (
     <>
+      <h2>Generation {generation}</h2>
+      <div>
+        <input
+          type="range"
+          min="0"
+          max={NB_ITERATIONS - 1}
+          value={generation}
+          onChange={(e) => setGeneration(parseInt(e.target.value))}
+        />
+      </div>
+
       <h2>Population</h2>
       <div className="portraits">
-        {results.population.map((p) => (
+        {geneticsResults.population.map((p) => (
           <Portrait
             key={p.id}
             person={p}
             className={classNames({
-              selected: results.newPopulation.includes(p),
+              selected: geneticsResults.newPopulation.includes(p),
             })}
           />
         ))}
       </div>
       <h2>Children</h2>
       <div className="portraits">
-        {results.children.map((p) => (
+        {geneticsResults.children.map((p) => (
           <Portrait
             key={p.id}
             person={p}
             className={classNames({
-              selected: results.newPopulation.includes(p),
+              selected: geneticsResults.newPopulation.includes(p),
             })}
           />
         ))}
       </div>
       <h2>Mutants</h2>
       <div className="portraits">
-        {results.mutants.map((p) => (
+        {geneticsResults.mutants.map((p) => (
           <Portrait
             key={p.id}
             person={p}
             className={classNames({
-              selected: results.newPopulation.includes(p),
+              selected: geneticsResults.newPopulation.includes(p),
             })}
           />
         ))}
