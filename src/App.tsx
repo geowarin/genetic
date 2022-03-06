@@ -1,10 +1,12 @@
 import { useAsset } from "use-asset";
 import { Canvas } from "./components/Canvas";
-import { doGenetics, RatedPerson } from "./logic/genetic";
+import { doGenetics } from "./logic/genetic";
 import classNames from "classnames";
+import { RatedPerson } from "./logic/utils";
+import { NB_ITERATIONS } from "./logic/constants";
 
 export function App() {
-  const results = useAsset(() => doGenetics());
+  const results = useAsset(() => doGenetics(NB_ITERATIONS));
 
   return (
     <>

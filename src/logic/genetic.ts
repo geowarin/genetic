@@ -1,38 +1,22 @@
-import { randomImgNumber, randomName } from "./random";
-import { generateFace, getImageData, loadImage } from "./canvas";
+import { getImageData, loadImage } from "./canvas";
 import { compare } from "../image-ssim";
-import { nanoid } from "nanoid";
-import { asSequence, range } from "sequency";
-
-const POPULATION_SIZE = 10;
-const NB_CHROMOSOMES = 9;
-const SELECTION_NUM = 6;
+import { asSequence } from "sequency";
+import {
+  array,
+  createPerson,
+  generateRandomPopulation,
+  GeneticsResult,
+  RatedPerson,
+  rateWith,
+} from "./utils";
+import { NB_CHROMOSOMES, NB_PARENTS, POPULATION_SIZE } from "./constants";
+import { randomElement } from "./random";
 
 export interface Person {
   face: CanvasRenderingContext2D;
   chromosome: number[];
   id: string;
   name: string;
-}
-
-export type RatedPerson = Person & { rating: number };
-
-type Fitness = (person: Person) => number;
-
-export interface GeneticsResult {
-  population: RatedPerson[];
-  selected: RatedPerson[];
-  children: RatedPerson[];
-  mutants: RatedPerson[];
-  newPopulation: RatedPerson[];
-}
-
-function array(length: number) {
-  return Array.from({ length });
-}
-
-export function randomChromosome() {
-  return array(NB_CHROMOSOMES).map(randomImgNumber);
 }
 
 function fitness(target: ImageData) {
@@ -42,39 +26,25 @@ function fitness(target: ImageData) {
   };
 }
 
-async function generateRandomPopulation(): Promise<Person[]> {
-  const chromosomes = array(POPULATION_SIZE).map(randomChromosome);
-  return Promise.all(chromosomes.map((c) => createPerson(randomName(), c)));
-}
-
 function selection(population: RatedPerson[]): RatedPerson[] {
   return asSequence(population)
     .sortedByDescending((p) => p.rating)
-    .take(SELECTION_NUM)
+    .take(NB_PARENTS)
     .toArray();
-}
-
-function createPerson(name: string, chromosome: number[]): Promise<Person> {
-  return generateFace(chromosome).then((face) => ({
-    face,
-    chromosome,
-    id: nanoid(),
-    name,
-  }));
 }
 
 async function crossOver(population: Person[]): Promise<Person[]> {
   const futurePersons = asSequence(population)
     .chunk(2)
     .flatMap(([one, two]) => {
-      const chromosome = range(0, NB_CHROMOSOMES - 1)
-        .map((index) => {
-          return Math.random() > 0.5
-            ? one.chromosome[index]
-            : two.chromosome[index];
-        })
-        .toArray();
-      return createPerson(one.name + " " + two.name, chromosome);
+      const chromosome = array(NB_CHROMOSOMES).map((_, index) => {
+        return Math.random() > 0.5
+          ? one.chromosome[index]
+          : two.chromosome[index];
+      });
+      const nameOne = randomElement(one.name.split(" "));
+      const nameTwo = randomElement(two.name.split(" "));
+      return createPerson(nameOne + " " + nameTwo, chromosome);
     });
   return Promise.all(futurePersons);
 }
@@ -90,16 +60,11 @@ function mutation(population: Person[]): Person[] {
   return [];
 }
 
-function rateWith(fitness: Fitness) {
-  return (population: Person[]) =>
-    population.map((p) => ({ ...p, rating: fitness(p) }));
-}
-
-export async function doGenetics(): Promise<GeneticsResult> {
-  const target = await loadImage("face-2.jpg");
-  const rate = rateWith(fitness(target));
-
-  const population = rate(await generateRandomPopulation());
+async function iteration(
+  rate: (population: Person[]) => RatedPerson[],
+  initialPopulation: Person[]
+): Promise<GeneticsResult> {
+  const population = rate(initialPopulation);
 
   const selected = selection(population);
 
@@ -115,4 +80,17 @@ export async function doGenetics(): Promise<GeneticsResult> {
     mutants,
     newPopulation,
   };
+}
+
+export async function doGenetics(
+  iterations: number = 1
+): Promise<GeneticsResult> {
+  const target = await loadImage("face-2.jpg");
+  const initialPopulation = await generateRandomPopulation();
+  const rate = rateWith(fitness(target));
+  let geneticsResult = await iteration(rate, initialPopulation);
+  for (let i = 1; i < iterations; i++) {
+    geneticsResult = await iteration(rate, geneticsResult.newPopulation);
+  }
+  return geneticsResult;
 }
