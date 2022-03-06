@@ -5,3 +5,4 @@ export const POPULATION_SIZE = 10;
 export const NB_CHROMOSOMES = 9;
 export const NB_PARENTS = 4;
 export const NB_ITERATIONS = 5;
+export const MUTATION_RATE = 0.2;

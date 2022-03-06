@@ -9,8 +9,14 @@ import {
   RatedPerson,
   rateWith,
 } from "./utils";
-import { NB_CHROMOSOMES, NB_PARENTS, POPULATION_SIZE } from "./constants";
-import { randomElement } from "./random";
+import {
+  MUTATION_RATE,
+  NB_CHROMOSOMES,
+  NB_FACES,
+  NB_PARENTS,
+  POPULATION_SIZE,
+} from "./constants";
+import { random, randomElement, randomName } from "./random";
 
 export interface Person {
   face: CanvasRenderingContext2D;
@@ -56,20 +62,28 @@ function replacement(population: RatedPerson[]): RatedPerson[] {
     .toArray();
 }
 
-function mutation(population: Person[]): Person[] {
-  return [];
+function mutation(population: Person[]): Promise<Person[]> {
+  return Promise.all(
+    asSequence(population)
+      .filter((_) => Math.random() <= MUTATION_RATE)
+      .map((p) => {
+        const index = random(0, NB_CHROMOSOMES - 1);
+        const newChromosome = [...p.chromosome];
+        newChromosome[index] = random(1, NB_FACES);
+        return createPerson(randomName(), newChromosome);
+      })
+      .toArray()
+  );
 }
 
 async function iteration(
   rate: (population: Person[]) => RatedPerson[],
-  initialPopulation: Person[]
+  population: RatedPerson[]
 ): Promise<GeneticsResult> {
-  const population = rate(initialPopulation);
-
   const selected = selection(population);
 
   const children = rate(await crossOver(selected));
-  const mutants = rate(mutation(population));
+  const mutants = rate(await mutation(population));
 
   const newPopulation = replacement([...population, ...mutants, ...children]);
 
@@ -90,7 +104,7 @@ export async function doGenetics(
   const rate = rateWith(fitness(target));
 
   const overallResults = [];
-  let currentPop = initialPopulation;
+  let currentPop = rate(initialPopulation);
   for (let i = 0; i < iterations; i++) {
     const results = await iteration(rate, currentPop);
     overallResults.push(results);

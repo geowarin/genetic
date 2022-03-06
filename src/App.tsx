@@ -53,17 +53,19 @@ export function App() {
             ))}
           </div>
         </div>
-        <h2>Mutants</h2>
-        <div className="portraits">
-          {geneticsResults.mutants.map((p) => (
-            <Portrait
-              key={p.id}
-              person={p}
-              className={classNames({
-                selected: geneticsResults.newPopulation.includes(p),
-              })}
-            />
-          ))}
+        <div className="results">
+          <h2>Mutants</h2>
+          <div className="portraits">
+            {geneticsResults.mutants.map((p) => (
+              <Portrait
+                key={p.id}
+                person={p}
+                className={classNames({
+                  selected: geneticsResults.newPopulation.includes(p),
+                })}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </>
