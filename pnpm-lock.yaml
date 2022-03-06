@@ -4,16 +4,22 @@ specifiers:
   '@types/react': ^17.0.33
   '@types/react-dom': ^17.0.10
   '@vitejs/plugin-react': ^1.0.7
+  classnames: ^2.3.1
+  nanoid: ^3.3.1
   prettier: ^2.5.1
   react: ^17.0.2
   react-dom: ^17.0.2
+  sequency: ^0.19.2
   typescript: ^4.5.4
   use-asset: ^1.0.4
   vite: ^2.8.0
 
 dependencies:
+  classnames: 2.3.1
+  nanoid: 3.3.1
   react: 17.0.2
   react-dom: 17.0.2_react@17.0.2
+  sequency: 0.19.2
   use-asset: 1.0.4_react@17.0.2
 
 devDependencies:
@@ -388,6 +394,10 @@ packages:
       supports-color: 5.5.0
     dev: true
 
+  /classnames/2.3.1:
+    resolution: {integrity: sha512-OlQdbZ7gLfGarSqxesMesDa5uz7KFbID8Kpq/SxIoNGDqY8lSYs0D+hhtBXhcdB3rcbXArFr7vlHheLk1voeNA==}
+    dev: false
+
   /color-convert/1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
     dependencies:
@@ -726,7 +736,6 @@ packages:
     resolution: {integrity: sha512-n6Vs/3KGyxPQd6uO0eH4Bv0ojGSUvuLlIHtC3Y0kEO23YRge8H9x1GCzLn28YX0H66pMkxuaeESFq4tKISKwdw==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
-    dev: true
 
   /node-releases/2.0.2:
     resolution: {integrity: sha512-XxYDdcQ6eKqp/YjI+tb2C5WM2LgjnZrfYg4vgQt49EK268b6gYCHsBLrK2qvJo4FmCtqmKezb0WZFK4fkrZNsg==}
@@ -821,6 +830,11 @@ packages:
     resolution: {integrity: sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==}
     hasBin: true
     dev: true
+
+  /sequency/0.19.2:
+    resolution: {integrity: sha512-iP0psxGsDgMTgyA6wfqVJqYsFp1eDO/WFh9ylJa2sWq/TuUxLrwPrpYN2+hgmIpFLFu1agnUu9t/vRzck1YWrw==}
+    engines: {node: '>=6.0.0'}
+    dev: false
 
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}

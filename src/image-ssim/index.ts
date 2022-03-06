@@ -23,7 +23,7 @@ export enum Channels {
   RGBAlpha = 4,
 }
 
-const DEFAULT_CHANNEL = Channels.RGBAlpha;
+const DEFAULT_CHANNEL = Channels.RGB;
 
 export interface CompareResult {
   ssim: number;

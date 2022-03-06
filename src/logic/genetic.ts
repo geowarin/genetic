@@ -1,19 +1,30 @@
-import { randomImgNumber } from "./random";
+import { randomImgNumber, randomName } from "./random";
 import { generateFace, getImageData, loadImage } from "./canvas";
 import { compare } from "../image-ssim";
-import { maxBy, MaxResult } from "./maths";
+import { nanoid } from "nanoid";
+import { asSequence } from "sequency";
 
 const POPULATION_SIZE = 10;
 const NB_CHROMOSOMES = 9;
+const SELECTION_NUM = 4;
 
-interface Person {
+export interface Person {
   face: CanvasRenderingContext2D;
   chromosome: number[];
+  id: string;
+  name: string;
 }
 
-interface GeneticsResult {
-  bestFit: MaxResult<Person>;
-  population: Person[];
+export type RatedPerson = Person & { rating: number };
+
+type Fitness = (person: Person) => number;
+
+export interface GeneticsResult {
+  population: RatedPerson[];
+  selected: RatedPerson[];
+  children: RatedPerson[];
+  mutants: RatedPerson[];
+  newPopulation: RatedPerson[];
 }
 
 function array(length: number) {
@@ -37,15 +48,53 @@ async function generateRandomPopulation(): Promise<Person[]> {
   return chromosomes.map((chromosome, i) => ({
     face: faces[i],
     chromosome,
+    id: nanoid(),
+    name: randomName(),
   }));
+}
+
+function selection(population: RatedPerson[]): RatedPerson[] {
+  return asSequence(population)
+    .sortedByDescending((p) => p.rating)
+    .take(SELECTION_NUM)
+    .toArray();
+}
+
+function crossOver(population: Person[]): Person[] {
+  return population;
+}
+
+function replacement(population: RatedPerson[]): RatedPerson[] {
+  return [];
+}
+
+function mutation(population: Person[]): Person[] {
+  return [];
+}
+
+function rateWith(fitness: Fitness) {
+  return (population: Person[]) =>
+    population.map((p) => ({ ...p, rating: fitness(p) }));
 }
 
 export async function doGenetics(): Promise<GeneticsResult> {
   const target = await loadImage("face-2.jpg");
-  const population = await generateRandomPopulation();
-  const bestFit = maxBy(population, fitness(target));
+  const rate = rateWith(fitness(target));
+
+  const population = rate(await generateRandomPopulation());
+
+  const selected = selection(population);
+
+  const children = rate(crossOver(selected));
+  const mutants = rate(mutation(population));
+
+  const newPopulation = replacement([...population, ...mutants, ...children]);
+
   return {
-    bestFit,
     population,
+    selected,
+    children,
+    mutants,
+    newPopulation,
   };
 }
