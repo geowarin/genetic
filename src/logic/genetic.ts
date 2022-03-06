@@ -2,7 +2,7 @@ import { randomImgNumber, randomName } from "./random";
 import { generateFace, getImageData, loadImage } from "./canvas";
 import { compare } from "../image-ssim";
 import { nanoid } from "nanoid";
-import { asSequence } from "sequency";
+import { asSequence, range } from "sequency";
 
 const POPULATION_SIZE = 10;
 const NB_CHROMOSOMES = 9;
@@ -44,13 +44,7 @@ function fitness(target: ImageData) {
 
 async function generateRandomPopulation(): Promise<Person[]> {
   const chromosomes = array(POPULATION_SIZE).map(randomChromosome);
-  const faces = await Promise.all(chromosomes.map(generateFace));
-  return chromosomes.map((chromosome, i) => ({
-    face: faces[i],
-    chromosome,
-    id: nanoid(),
-    name: randomName(),
-  }));
+  return Promise.all(chromosomes.map((c) => createPerson(randomName(), c)));
 }
 
 function selection(population: RatedPerson[]): RatedPerson[] {
@@ -60,8 +54,29 @@ function selection(population: RatedPerson[]): RatedPerson[] {
     .toArray();
 }
 
-function crossOver(population: Person[]): Person[] {
-  return population;
+function createPerson(name: string, chromosome: number[]): Promise<Person> {
+  return generateFace(chromosome).then((face) => ({
+    face,
+    chromosome,
+    id: nanoid(),
+    name,
+  }));
+}
+
+async function crossOver(population: Person[]): Promise<Person[]> {
+  const futurePersons = asSequence(population)
+    .chunk(2)
+    .flatMap(([one, two]) => {
+      const chromosome = range(0, NB_CHROMOSOMES - 1)
+        .map((index) => {
+          return Math.random() > 0.5
+            ? one.chromosome[index]
+            : two.chromosome[index];
+        })
+        .toArray();
+      return createPerson(one.name + " " + two.name, chromosome);
+    });
+  return Promise.all(futurePersons);
 }
 
 function replacement(population: RatedPerson[]): RatedPerson[] {
@@ -85,7 +100,7 @@ export async function doGenetics(): Promise<GeneticsResult> {
 
   const selected = selection(population);
 
-  const children = rate(crossOver(selected));
+  const children = rate(await crossOver(selected));
   const mutants = rate(mutation(population));
 
   const newPopulation = replacement([...population, ...mutants, ...children]);

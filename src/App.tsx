@@ -1,6 +1,6 @@
 import { useAsset } from "use-asset";
 import { Canvas } from "./components/Canvas";
-import { doGenetics, Person, RatedPerson } from "./logic/genetic";
+import { doGenetics, RatedPerson } from "./logic/genetic";
 import classNames from "classnames";
 
 export function App() {
@@ -20,11 +20,17 @@ export function App() {
           />
         ))}
       </div>
+      <h2>Children</h2>
+      <div className="portraits">
+        {results.children.map((p) => (
+          <Portrait key={p.id} person={p} />
+        ))}
+      </div>
     </>
   );
 }
 
-type PortraitProps = { person: RatedPerson; className: string };
+type PortraitProps = { person: RatedPerson; className?: string };
 
 function Portrait({ person, className }: PortraitProps) {
   return (
